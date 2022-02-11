@@ -2,9 +2,11 @@ package config
 
 type Config interface {
 	GetDatabaseConfig() *DatabaseConfig
+	GetEntryFee() float64
 }
 type config struct {
 	DatabaseConfig *DatabaseConfig
+	EntryFee       float64
 }
 
 type DatabaseConfig struct {
@@ -22,10 +24,13 @@ func NewConfig() Config {
 		Password: "hello1234",
 		Username: "root",
 		Database: "gamur",
-	}}
+	}, EntryFee: 2.50}
 	return c
 }
 
 func (c *config) GetDatabaseConfig() *DatabaseConfig {
 	return c.DatabaseConfig
+}
+func (c *config) GetEntryFee() float64 {
+	return c.EntryFee
 }

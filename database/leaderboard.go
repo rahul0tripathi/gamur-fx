@@ -8,10 +8,10 @@ type Leaderboard struct {
 
 const LIMIT = 50
 
-const GET_TOP_PLAYERS = `SELECT u.username,u.id,l.score FROM Leaderboard l LEFT JOIN Users u ON u.id=l.user_id ORDER BY l.score DESC LIMIT ?`
+const GetTopPlayers = `SELECT u.username,u.id,l.score FROM Leaderboard l LEFT JOIN Users u ON u.id=l.user_id ORDER BY l.score DESC LIMIT ?`
 
 func (d *database) GetTopPlayers() (leaderboard []Leaderboard, err error) {
-	l, err := d.db.Prepare(GET_TOP_PLAYERS)
+	l, err := d.db.Prepare(GetTopPlayers)
 	if err != nil {
 		return
 	}

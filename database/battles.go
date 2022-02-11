@@ -6,16 +6,18 @@ type Battle struct {
 	Username   string  `json:"username"`
 	ProfileImg string  `json:"profile_img"`
 	Score      int     `json:"score"`
+	Status     string  `json:"status"`
 }
 
 const (
-	BattleStatusPending = "pending"
+	BattleStatusPending   = "pending"
 	BattleStatusCompleted = "completed"
-	GET_USER_BATTLES      = `
+	GetUserBattles        = `
 		SELECT b.id,
 			   b.entry_fee,
 			   u.username,
-			   p.score
+			   p.score,
+			   b.status
 		FROM   players p
 			   LEFT JOIN battle b
 					  ON b.id = p.battle_id
@@ -23,14 +25,14 @@ const (
 					  ON u.id = p.player
 		WHERE  p.player = ?;
 `
-	CREATE_NEW_BATTLE    = `INSERT INTO Battle (entry_fee,game_id,status) VALUES(?,?,'pending');`
-	INSERT_PLAYERS       = `INSERT INTO Players (battle_id,player,score) VALUES(?,?,0)`
-	UPDATE_BATTLE_STATUS = `UPDATE Battle SET status = ? WHERE  id=?`
-	UPDATE_PLAYER_SCORE  = `UPDATE Players SET score = ? WHERE player=? and battle_id=?`
+	CreateNewBattle    = `INSERT INTO Battle (entry_fee,game_id,status) VALUES(?,?,'pending');`
+	InsertPlayers      = `INSERT INTO Players (battle_id,player,score) VALUES(?,?,0)`
+	UpdateBattleStatus = `UPDATE Battle SET status = ? WHERE  id=?`
+	UpdatePlayerScore  = `UPDATE Players SET score = ? WHERE player=? and battle_id=?`
 )
 
-func (d *database) NewBattle(players []int, entryFee float64, gameId int) (err error) {
-	stmnt, err := d.db.Prepare(CREATE_NEW_BATTLE)
+func (d *database) NewBattle(players []int, entryFee float64, gameId int) (battleId int64, err error) {
+	stmnt, err := d.db.Prepare(CreateNewBattle)
 	if err != nil {
 		return
 	}
@@ -38,11 +40,11 @@ func (d *database) NewBattle(players []int, entryFee float64, gameId int) (err e
 	if err != nil {
 		return
 	}
-	battleId, err := battle.LastInsertId()
+	battleId, err = battle.LastInsertId()
 	if err != nil {
 		return
 	}
-	insertPlayers, err := d.db.Prepare(INSERT_PLAYERS)
+	insertPlayers, err := d.db.Prepare(InsertPlayers)
 	if err != nil {
 		return
 	}
@@ -56,7 +58,7 @@ func (d *database) NewBattle(players []int, entryFee float64, gameId int) (err e
 }
 
 func (d *database) GetUserBattles(user int) (battles []Battle, err error) {
-	s, err := d.db.Prepare(GET_USER_BATTLES)
+	s, err := d.db.Prepare(GetUserBattles)
 	if err != nil {
 		return
 	}
@@ -66,7 +68,7 @@ func (d *database) GetUserBattles(user int) (battles []Battle, err error) {
 	}
 	for r.Next() {
 		b := Battle{}
-		if err := r.Scan(&b.Id, &b.EntryFee, &b.Username, &b.Score); err != nil {
+		if err := r.Scan(&b.Id, &b.EntryFee, &b.Username, &b.Score, &b.Status); err != nil {
 			d.logger.Error(err)
 			continue
 		}
@@ -76,7 +78,7 @@ func (d *database) GetUserBattles(user int) (battles []Battle, err error) {
 }
 
 func (d *database) UpdatePlayerResult(player int, score int, battle int) (err error) {
-	s, err := d.db.Prepare(UPDATE_PLAYER_SCORE)
+	s, err := d.db.Prepare(UpdatePlayerScore)
 	if err != nil {
 		return
 	}
@@ -84,7 +86,7 @@ func (d *database) UpdatePlayerResult(player int, score int, battle int) (err er
 	if err != nil {
 		return
 	}
-	updateBattle, err := d.db.Prepare(UPDATE_BATTLE_STATUS)
+	updateBattle, err := d.db.Prepare(UpdateBattleStatus)
 	if err != nil {
 		return
 	}

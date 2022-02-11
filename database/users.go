@@ -5,11 +5,12 @@ import (
 	"encoding/hex"
 )
 
-const INITIAL_BALANCE = 100.00
+const InitialBalance = 100.00
 const GetUser = `SELECT id,balance,username FROM Users WHERE id=?`
 const UpdateUserBalance = `UPDATE Users SET balance = ? WHERE id=?`
 const CreateUser = `INSERT INTO Users(username,balance,password) VALUES(?,?,?)`
 const GetUserPassword = `SELECT password FROM Users WHERE id=?`
+const GetUserByUsername = `SELECT id FROM Users WHERE username=?`
 
 type User struct {
 	Id         int     `json:"id"`
@@ -37,7 +38,7 @@ func (d *database) CreateUser(username string, password string) (err error) {
 		return err
 	}
 	h := md5.Sum([]byte(password))
-	_, err = stmt.Exec(username, INITIAL_BALANCE, hex.EncodeToString(h[:]))
+	_, err = stmt.Exec(username, InitialBalance, hex.EncodeToString(h[:]))
 	return
 }
 
@@ -54,5 +55,17 @@ func (d *database) VerifyUserPassword(user int, password string) (verified bool)
 		d.logger.Error(err)
 		return
 	}
+	d.logger.Info(user, password, dbPassword)
 	return dbPassword == password
+}
+
+func (d *database) GetUserByUserName(username string) (userId int, err error) {
+	unameQuery, err := d.db.Prepare(GetUserByUsername)
+	if err != nil {
+		d.logger.Error(err)
+		return
+	}
+	uid := unameQuery.QueryRow(username)
+	err = uid.Scan(&userId)
+	return
 }

@@ -10,15 +10,16 @@ import (
 
 type Database interface {
 	SetupDatabase()
-	CreateUser(string, string) error
-	GetUser(int) (User, error)
-	DeductBalance(float64, int, string) error
-	GetAllTransactions(int) ([]Txn, error)
-	NewBattle([]int, float64, int) error
-	GetUserBattles(int) ([]Battle, error)
-	UpdatePlayerResult(int, int, int) error
-	GetTopPlayers() ([]Leaderboard, error)
-	VerifyUserPassword(int, string) bool
+	CreateUser(username string, password string) (err error)
+	GetUser(id int) (user User, err error)
+	DeductBalance(amount float64, userId int, title string) (err error)
+	GetAllTransactions(user int) (txn []Txn, err error)
+	NewBattle(players []int, entryFee float64, gameId int) (battleId int64, err error)
+	GetUserBattles(user int) (battles []Battle, err error)
+	UpdatePlayerResult(player int, score int, battle int) (err error)
+	GetTopPlayers() (leaderboard []Leaderboard, err error)
+	VerifyUserPassword(user int, password string) (verified bool)
+	GetUserByUserName(username string) (userId int, err error)
 }
 type database struct {
 	db     *sql.DB

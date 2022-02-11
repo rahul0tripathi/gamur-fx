@@ -19,12 +19,12 @@ type Txn struct {
 	Type   string  `json:"type"`
 }
 
-const UPDATE_BALANCE = `UPDATE Users SET balance = balance - ? WHERE id=?`
-const UPDATE_TXN = `UPDATE Transactions SET status = 'successful' WHERE id=?;`
-const CREATE_TXN = `
+const UpdateBalance = `UPDATE Users SET balance = balance - ? WHERE id=?`
+const UpdateTxn = `UPDATE Transactions SET status = 'successful' WHERE id=?;`
+const CreateTxn = `
 	INSERT INTO TRANSACTIONS (amount,type,status,user_id,title) VALUES (?,?,'failed',?,?);
 `
-const GET_ALL_USER_TXN = `SELECT id,amount,type,status,title FROM Transactions WHERE user_id = ?`
+const GetAllUserTxn = `SELECT id,amount,type,status,title FROM Transactions WHERE user_id = ?`
 
 func (d *database) DeductBalance(amount float64, userId int, title string) (err error) {
 	defer func() {
@@ -35,7 +35,7 @@ func (d *database) DeductBalance(amount float64, userId int, title string) (err 
 		}
 
 	}()
-	create, err := d.db.Prepare(CREATE_TXN)
+	create, err := d.db.Prepare(CreateTxn)
 	if err != nil {
 		return
 	}
@@ -52,12 +52,12 @@ func (d *database) DeductBalance(amount float64, userId int, title string) (err 
 	if err != nil {
 		return
 	}
-	_, err = txn.ExecContext(ctx, UPDATE_BALANCE, amount, userId)
+	_, err = txn.ExecContext(ctx, UpdateBalance, amount, userId)
 	if err != nil {
 		txn.Rollback()
 		return
 	}
-	_, err = txn.ExecContext(ctx, UPDATE_TXN, txnId)
+	_, err = txn.ExecContext(ctx, UpdateTxn, txnId)
 	if err != nil {
 		txn.Rollback()
 		return
@@ -68,7 +68,7 @@ func (d *database) DeductBalance(amount float64, userId int, title string) (err 
 }
 
 func (d *database) GetAllTransactions(user int) (txn []Txn, err error) {
-	txns, err := d.db.Prepare(GET_ALL_USER_TXN)
+	txns, err := d.db.Prepare(GetAllUserTxn)
 	if err != nil {
 		return
 	}
