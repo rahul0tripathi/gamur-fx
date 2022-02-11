@@ -1,0 +1,8 @@
+{
+  "database_config": {
+    "host": "127.0.0.1",
+    "password": "",
+    "database": "gamur",
+    "port": "3306"
+  }
+}
