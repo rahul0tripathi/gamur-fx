@@ -54,5 +54,6 @@ func (d *database) SetupDatabase() {
 		if err != nil {
 			d.logger.Error("failed to setup database", err)
 		}
+		x.Close()
 	}
 }

@@ -21,6 +21,7 @@ type User struct {
 
 func (d *database) GetUser(id int) (user User, err error) {
 	stmt, err := d.db.Prepare(GetUser)
+	defer stmt.Close()
 	if err != nil {
 		d.logger.Error(err)
 		return user, err
@@ -34,6 +35,7 @@ func (d *database) GetUser(id int) (user User, err error) {
 
 func (d *database) CreateUser(username string, password string) (err error) {
 	stmt, err := d.db.Prepare(CreateUser)
+	defer stmt.Close()
 	if err != nil {
 		return err
 	}
@@ -44,6 +46,7 @@ func (d *database) CreateUser(username string, password string) (err error) {
 
 func (d *database) VerifyUserPassword(user int, password string) (verified bool) {
 	passQuery, err := d.db.Prepare(GetUserPassword)
+	defer passQuery.Close()
 	if err != nil {
 		d.logger.Error(err)
 		return
@@ -61,6 +64,7 @@ func (d *database) VerifyUserPassword(user int, password string) (verified bool)
 
 func (d *database) GetUserByUserName(username string) (userId int, err error) {
 	unameQuery, err := d.db.Prepare(GetUserByUsername)
+	defer unameQuery.Close()
 	if err != nil {
 		d.logger.Error(err)
 		return

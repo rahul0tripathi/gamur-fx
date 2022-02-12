@@ -23,7 +23,7 @@ const (
 					  ON b.id = p.battle_id
 			   LEFT JOIN users u
 					  ON u.id = p.player
-		WHERE  p.player = ?;
+		WHERE  p.player = ? ORDER BY b.id DESC LIMIT 50;
 `
 	CreateNewBattle    = `INSERT INTO Battle (entry_fee,game_id,status) VALUES(?,?,'pending');`
 	InsertPlayers      = `INSERT INTO Players (battle_id,player,score) VALUES(?,?,0)`
@@ -33,6 +33,7 @@ const (
 
 func (d *database) NewBattle(players []int, entryFee float64, gameId int) (battleId int64, err error) {
 	stmnt, err := d.db.Prepare(CreateNewBattle)
+	defer stmnt.Close()
 	if err != nil {
 		return
 	}
@@ -59,6 +60,7 @@ func (d *database) NewBattle(players []int, entryFee float64, gameId int) (battl
 
 func (d *database) GetUserBattles(user int) (battles []Battle, err error) {
 	s, err := d.db.Prepare(GetUserBattles)
+	defer s.Close()
 	if err != nil {
 		return
 	}
@@ -79,6 +81,7 @@ func (d *database) GetUserBattles(user int) (battles []Battle, err error) {
 
 func (d *database) UpdatePlayerResult(player int, score int, battle int) (err error) {
 	s, err := d.db.Prepare(UpdatePlayerScore)
+	defer s.Close()
 	if err != nil {
 		return
 	}
@@ -87,6 +90,7 @@ func (d *database) UpdatePlayerResult(player int, score int, battle int) (err er
 		return
 	}
 	updateBattle, err := d.db.Prepare(UpdateBattleStatus)
+	defer updateBattle.Close()
 	if err != nil {
 		return
 	}

@@ -18,21 +18,14 @@ func register(lifecycle fx.Lifecycle, l *zap.SugaredLogger, d database.Database,
 			OnStart: func(ctx context.Context) error {
 				l.Info("starting up server")
 				d.SetupDatabase()
-				//d.CreateUser("test","helloiw")
-				//d.GetUser(0)
-				//d.GetUser(1)
-				//err := d.DeductBalance(500.35,1,"user for game x")
-				//fmt.Println(d.GetAllTransactions(1))
-				//fmt.Println(d.NewBattle([]int{1},5.00,1))
-				//fmt.Println(d.GetUserBattles(1))
-				//fmt.Println(d.UpdatePlayerResult(1,199,1))
-				//fmt.Println(d.GetTopPlayers())
 				l.Info("setup successful")
+
 				go s.Run()
 				return nil
 			},
 			OnStop: func(ctx context.Context) error {
-				l.Info("server kiled")
+				l.Info("KILLING")
+				//TODO: Add method to gracefully close server
 				return nil
 			},
 		},

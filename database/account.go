@@ -24,18 +24,18 @@ const UpdateTxn = `UPDATE Transactions SET status = 'successful' WHERE id=?;`
 const CreateTxn = `
 	INSERT INTO TRANSACTIONS (amount,type,status,user_id,title) VALUES (?,?,'failed',?,?);
 `
-const GetAllUserTxn = `SELECT id,amount,type,status,title FROM Transactions WHERE user_id = ?`
+const GetAllUserTxn = `SELECT id,amount,type,status,title FROM Transactions WHERE user_id = ? ORDER BY id DESC LIMIT 40`
 
 func (d *database) DeductBalance(amount float64, userId int, title string) (err error) {
+	create, err := d.db.Prepare(CreateTxn)
 	defer func() {
 		if err != nil {
 			d.logger.Error("Failed to deduct amount ", err)
 		} else {
 			d.logger.Infof("successfully deducted %f from user %d", amount, userId)
 		}
-
+		create.Close()
 	}()
-	create, err := d.db.Prepare(CreateTxn)
 	if err != nil {
 		return
 	}
@@ -69,11 +69,11 @@ func (d *database) DeductBalance(amount float64, userId int, title string) (err 
 
 func (d *database) GetAllTransactions(user int) (txn []Txn, err error) {
 	txns, err := d.db.Prepare(GetAllUserTxn)
+	defer txns.Close()
 	if err != nil {
 		return
 	}
 	rows, err := txns.Query(user)
-	defer rows.Close()
 	for rows.Next() {
 		t := Txn{}
 		if err := rows.Scan(&t.Id, &t.Amount, &t.Type, &t.Status, &t.Title); err != nil {

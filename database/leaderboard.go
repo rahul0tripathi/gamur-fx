@@ -12,6 +12,7 @@ const GetTopPlayers = `SELECT u.username,u.id,l.score FROM Leaderboard l LEFT JO
 
 func (d *database) GetTopPlayers() (leaderboard []Leaderboard, err error) {
 	l, err := d.db.Prepare(GetTopPlayers)
+	defer l.Close()
 	if err != nil {
 		return
 	}

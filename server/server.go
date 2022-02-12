@@ -24,7 +24,7 @@ func NewServer(r routes.Router, l *zap.SugaredLogger) Server {
 
 func (s server) Run() {
 	s.logger.Info("Starting up api server")
-	err := http.ListenAndServe(":3000", s.router.GetBaseRouter())
+	err := http.ListenAndServe(":3005", s.router.GetBaseRouter())
 	if err != nil {
 		s.logger.Error(err)
 	}
