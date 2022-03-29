@@ -1,5 +1,10 @@
 package config
 
+import (
+	"crypto/rand"
+	"math/big"
+)
+
 type Config interface {
 	GetDatabaseConfig() *DatabaseConfig
 	GetEntryFee() float64
@@ -32,5 +37,19 @@ func (c *config) GetDatabaseConfig() *DatabaseConfig {
 	return c.DatabaseConfig
 }
 func (c *config) GetEntryFee() float64 {
-	return c.EntryFee
+	max := int64(10)
+	min := int64(2)
+	bg := big.NewInt(max - min)
+
+	// get big.Int between 0 and bg
+	// in this case 0 to 20
+	n, err := rand.Int(rand.Reader, bg)
+	if err != nil {
+		panic(err)
+	}
+
+	// add n to min to support the passed in range
+	return float64(n.Int64() + min)
+
+	//return c.EntryFee
 }
